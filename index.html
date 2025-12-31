@@ -32,12 +32,12 @@
         <div class="grid-3 input-row">
           <div class="input-group">
             <label for="apiUrl">API URL</label>
-            <input type="text" id="apiUrl" />
+            <input type="text" id="apiUrl" placeholder="例如：https://api.openai.com" />
           </div>
           <div class="input-group">
             <label for="apiKey">API Key</label>
             <div class="password-input-wrapper">
-              <input type="password" id="apiKey" />
+              <input type="password" id="apiKey" placeholder="例如：sk-xxxxxxxxxxxx" />
               <button type="button" class="password-toggle" data-target="apiKey" aria-label="显示/隐藏密码">
                 <svg class="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
@@ -50,7 +50,7 @@
           </div>
           <div class="input-group">
             <label for="model">模型</label>
-            <input type="text" id="model" />
+            <input type="text" id="model" placeholder="例如：gpt-4o" />
           </div>
         </div>
       </section>
@@ -59,12 +59,13 @@
         <h2>测试内容</h2>
         <p class="muted">在下方选择测试类型，编辑用户消息，然后发送请求。结果将按轮次与请求分块展示。</p>
 
+        <div class="segmented" id="vendorType">
+          <button class="seg-btn active" data-vendor="openai">OpenAI</button>
+          <button class="seg-btn" data-vendor="anthropic">Anthropic</button>
+          <button class="seg-btn" data-vendor="google">Google</button>
+        </div>
         <div class="segmented" id="testType">
-          <button class="seg-btn active" data-scenario="openai_tools">OpenAI API 工具调用</button>
-          <button class="seg-btn" data-scenario="anthropic_tools">Claude API 工具调用</button>
-          <button class="seg-btn" data-scenario="gemini_tools">Gemini API 工具调用</button>
-          <button class="seg-btn" data-scenario="gemini_search">Gemini API 搜索</button>
-          <button class="seg-btn" data-scenario="gemini_url_context">Gemini API URL 上下文</button>
+          <!-- 由JS动态渲染 -->
         </div>
 
         <div class="input-group">
@@ -111,13 +112,13 @@
 
           <div class="input-group">
             <label for="configUrl">API URL</label>
-            <input type="text" id="configUrl" />
+            <input type="text" id="configUrl" placeholder="例如：https://api.openai.com" />
           </div>
 
           <div class="input-group">
             <label for="configKey">API Key</label>
             <div class="password-input-wrapper">
-              <input type="password" id="configKey" />
+              <input type="password" id="configKey" placeholder="例如：sk-xxxxxxxxxxxx" />
               <button type="button" class="password-toggle" data-target="configKey" aria-label="显示/隐藏密码">
                 <svg class="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
@@ -131,7 +132,7 @@
 
           <div class="input-group">
             <label for="configModel">默认模型</label>
-            <input type="text" id="configModel" />
+            <input type="text" id="configModel" placeholder="例如：gpt-4o" />
           </div>
 
           <div class="modal-actions">
@@ -139,7 +140,6 @@
             <button class="btn btn-secondary" id="saveConfigBtn">保存配置</button>
             <button class="btn btn-secondary" id="cancelEditBtn" style="display:none;">取消编辑</button>
           </div>
-          <div id="saveSuccess" class="success-message">配置已保存</div>
         </div>
 
         <div class="modal-right">

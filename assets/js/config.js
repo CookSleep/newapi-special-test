@@ -5,5 +5,5 @@
 window.APP_CONFIG = {
   apiUrl: 'https://api.openai.com',
   apiKey: '',
-  model: 'gemini-2.5-pro'
+  model: 'gemini-3-flash-preview'
 };

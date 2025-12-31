@@ -174,6 +174,16 @@
     return el;
   }
 
+  // Success inline block (green tip)
+  function addInlineSuccess(text){
+    const el = document.createElement('div');
+    el.className = 'success-inline';
+    el.textContent = String(text || '成功');
+    messageTimeline.appendChild(el);
+    scrollLatestIntoView();
+    return el;
+  }
+
   // Error inline block under latest message
   function addInlineError(text, raw){
     const el = document.createElement('div');
@@ -701,7 +711,7 @@
     // 发起新请求前自动清空历史记录
     clearResults();
 
-    const scenario = document.querySelector('.seg-btn.active')?.dataset.scenario || 'openai_tools';
+    const scenario = testTypeWrap.querySelector('.seg-btn.active')?.dataset.scenario || 'openai_tools';
     const endpoint = buildEndpoint(apiUrl);
     const geminiEndpoint = buildGeminiEndpoint(apiUrl, model, apiKey);
     const anthropicEndpoint = buildAnthropicEndpoint(apiUrl);
@@ -1028,6 +1038,8 @@
         // 未触发搜索工具调用的提示放在响应下面
         if(!hasWebSearchCall){
           addInlineInfo('未触发搜索工具调用：模型可能未理解指令，或 API 异常。');
+        } else {
+          addInlineSuccess('模型成功进行了搜索工具调用，但回答中仍可能含有事实性错误');
         }
       }
       else if(scenario === 'gemini_search'){
@@ -1049,6 +1061,8 @@
         const hasGroundingMetadata = cand && cand.groundingMetadata;
         if(!hasGroundingMetadata){
           addInlineInfo('未触发搜索工具调用：模型可能未理解指令，或 API 异常。');
+        } else {
+          addInlineSuccess('模型成功进行了搜索工具调用，但回答中仍可能含有事实性错误');
         }
       }
       else if(scenario === 'gemini_url_context'){
@@ -1070,6 +1084,8 @@
         const hasGroundingMetadata = cand && cand.groundingMetadata;
         if(!hasGroundingMetadata){
           addInlineInfo('未触发 URL 上下文工具调用：模型可能未理解指令，或 API 异常。');
+        } else {
+          addInlineSuccess('模型成功进行了搜索工具调用，但回答中仍可能含有事实性错误');
         }
       }
 

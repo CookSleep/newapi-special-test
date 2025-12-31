@@ -96,6 +96,7 @@ body { margin: 0; font-family: system-ui, sans-serif; background: linear-gradien
 .error-inline { background: #fff1f2; border: 1px solid #fecdd3; color: #b91c1c; border-radius: 10px; padding: 10px 12px; margin: 8px 0; font-size: 13px; }
 .error-inline pre { font-family: ui-monospace, monospace; font-size: 13px; }
 .info-inline { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 10px; padding: 10px 12px; margin: 8px 0; font-size: 13px; }
+.success-inline { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 10px; padding: 10px 12px; margin: 8px 0; font-size: 13px; }
 .success-message { color: #059669; margin-top: 8px; display: none; }
 
 /* 对话时间轴消息样式 */

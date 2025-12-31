@@ -69,13 +69,13 @@ body { margin: 0; font-family: system-ui, sans-serif; background: linear-gradien
 
 /* 测试场景胶囊按钮 */
 #testType { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-#testType .seg-btn { border: 1px solid #e2e8f0; background: #ffffff; color: #475569; padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; transition: all 0.2s ease; }
+#testType .seg-btn { border: 1px solid #e2e8f0; background: #ffffff; color: #475569; padding: 6px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; transition: all 0.2s ease; }
 #testType .seg-btn:hover { border-color: #cbd5e1; background: #f8fafc; color: #334155; }
 #testType .seg-btn.active { background: #eff6ff; border-color: #bfdbfe; color: #1e90ff; font-weight: 600; box-shadow: 0 1px 2px rgba(30,144,255,0.05); }
 
 /* 其他用途的通用分段控件 */
 .segmented { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px; }
-.segmented:not(#vendorType):not(#testType) .seg-btn { border: 1px solid #cfe6ff; background: #ffffff; color: #0f172a; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.segmented:not(#vendorType):not(#testType) .seg-btn { border: 1px solid #cfe6ff; background: #ffffff; color: #0f172a; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
 .segmented:not(#vendorType):not(#testType) .seg-btn:hover { background: #f4f9ff; }
 .segmented:not(#vendorType):not(#testType) .seg-btn.active { background: #1e90ff; color: #ffffff; border-color: #1e90ff; }
 

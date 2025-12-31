@@ -35,6 +35,17 @@
   // Waiting loader state
   let requestPending = false;
   let waitingEl = null;
+  let currentAbortController = null;
+
+  // Abort current request helper
+  function abortCurrentRequest(){
+    if(currentAbortController){
+      currentAbortController.abort();
+      currentAbortController = null;
+    }
+    requestPending = false;
+    hideWaiting();
+  }
 
   // LocalStorage helpers
   function loadConfigs(){
@@ -664,6 +675,7 @@
 
   // 切换厂商
   function setActiveVendor(vendor){
+    abortCurrentRequest();
     currentVendor = vendor;
     $$('#vendorType .seg-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.vendor === vendor));
     renderTestButtons(vendor);
@@ -672,6 +684,7 @@
 
   // 切换测试场景
   function setActiveScenario(scenario){
+    abortCurrentRequest();
     $$('#testType .seg-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.scenario === scenario));
     // 查找对应的默认输入
     const tests = vendorTests[currentVendor] || [];
@@ -702,6 +715,7 @@
 
   // Test function call flow (multiple scenarios)
   testBtn.addEventListener('click', async () => {
+    abortCurrentRequest();
     const apiUrl = apiUrlEl.value.trim();
     const apiKey = apiKeyEl.value.trim();
     const model = (modelEl.value || SYSTEM_DEFAULTS.model).trim();
@@ -710,6 +724,9 @@
     testBtn.disabled = true; testBtn.textContent = '请求中...';
     // 发起新请求前自动清空历史记录
     clearResults();
+
+    currentAbortController = new AbortController();
+    const signal = currentAbortController.signal;
 
     const scenario = testTypeWrap.querySelector('.seg-btn.active')?.dataset.scenario || 'openai_tools';
     const endpoint = buildEndpoint(apiUrl);
@@ -744,7 +761,7 @@
         addMessage('user', '消息 #1', requestBody1.messages[0]);
 
         const t1Start = Date.now();
-        const r1 = await fetchAndParse(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(requestBody1) });
+        const r1 = await fetchAndParse(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(requestBody1), signal });
         const data1 = ensureJsonOrThrow(r1);
         const t1Duration = Date.now() - t1Start;
         addBlock('响应 #1', data1, t1Duration);
@@ -776,7 +793,7 @@
         const requestBody2 = { model, messages: [ requestBody1.messages[0], assistantMsg, toolMessage ] };
         const t2Start = Date.now();
         addBlock('请求 #2', requestBody2);
-        const r2 = await fetchAndParse(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(requestBody2) });
+        const r2 = await fetchAndParse(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(requestBody2), signal });
         const data2 = ensureJsonOrThrow(r2);
         const t2Duration = Date.now() - t2Start;
         addBlock('响应 #2', data2, t2Duration);
@@ -803,7 +820,8 @@
         const aR1 = await fetchAndParse(anthropicEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify(aReq1)
+          body: JSON.stringify(aReq1),
+          signal
         });
         const aData1 = ensureJsonOrThrow(aR1);
         const aT1Duration = Date.now() - aT1Start;
@@ -841,7 +859,8 @@
         const aR2 = await fetchAndParse(anthropicEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify(aReq2)
+          body: JSON.stringify(aReq2),
+          signal
         });
         const aData2 = ensureJsonOrThrow(aR2);
         const aT2Duration = Date.now() - aT2Start;
@@ -865,7 +884,7 @@
         addBlock('请求 #1', gReq1);
         addMessage('user', '消息 #1', { role: 'user', parts: [{ text: userText }] });
         const gT1Start = Date.now();
-        const gR1 = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq1) });
+        const gR1 = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq1), signal });
         const gData1 = ensureJsonOrThrow(gR1);
         const gT1Duration = Date.now() - gT1Start;
         addBlock('响应 #1', gData1, gT1Duration);
@@ -902,7 +921,7 @@
         };
         const gT2Start = Date.now();
         addBlock('请求 #2', gReq2);
-        const gR2 = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq2) });
+        const gR2 = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq2), signal });
         const gData2 = ensureJsonOrThrow(gR2);
         const gT2Duration = Date.now() - gT2Start;
         addBlock('响应 #2', gData2, gT2Duration);
@@ -934,7 +953,8 @@
         const rtR1 = await fetchAndParse(responsesEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify(rtReq1)
+          body: JSON.stringify(rtReq1),
+          signal
         });
         const rtData1 = ensureJsonOrThrow(rtR1);
         const rtT1Duration = Date.now() - rtT1Start;
@@ -982,7 +1002,8 @@
         const rtR2 = await fetchAndParse(responsesEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify(rtReq2)
+          body: JSON.stringify(rtReq2),
+          signal
         });
         const rtData2 = ensureJsonOrThrow(rtR2);
         const rtT2Duration = Date.now() - rtT2Start;
@@ -1012,7 +1033,8 @@
         const rR = await fetchAndParse(responsesEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify(rReq)
+          body: JSON.stringify(rReq),
+          signal
         });
         const rData = ensureJsonOrThrow(rR);
         const rTDuration = Date.now() - rTStart;
@@ -1050,7 +1072,7 @@
         addBlock('请求 #1', gReq);
         addMessage('user', '消息', gReq.contents[0]);
         const gsTStart = Date.now();
-        const gR = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq) });
+        const gR = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq), signal });
         const gData = ensureJsonOrThrow(gR);
         const gsTDuration = Date.now() - gsTStart;
         addBlock('响应 #1', gData, gsTDuration);
@@ -1073,7 +1095,7 @@
         addBlock('请求 #1', gReq);
         addMessage('user', '消息', gReq.contents[0]);
         const guTStart = Date.now();
-        const gR = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq) });
+        const gR = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq), signal });
         const gData = ensureJsonOrThrow(gR);
         const guTDuration = Date.now() - guTStart;
         addBlock('响应 #1', gData, guTDuration);
@@ -1090,6 +1112,10 @@
       }
 
     }catch(err){
+      if(err.name === 'AbortError'){
+        console.log('Request aborted by user');
+        return;
+      }
       console.error(err);
       // 清空顶部简要错误，改为在时间线内展示红色错误块
       errorMessage.textContent = '';

@@ -45,6 +45,7 @@
     }
     requestPending = false;
     hideWaiting();
+    updateClearBtnState();
   }
 
   // LocalStorage helpers
@@ -182,6 +183,7 @@
     el.textContent = String(text || '提示');
     messageTimeline.appendChild(el);
     scrollLatestIntoView();
+    updateClearBtnState();
     return el;
   }
 
@@ -192,6 +194,7 @@
     el.textContent = String(text || '成功');
     messageTimeline.appendChild(el);
     scrollLatestIntoView();
+    updateClearBtnState();
     return el;
   }
 
@@ -251,6 +254,7 @@
     } catch { /* 附加原始内容失败时安静降级 */ }
     // 滚动到最新位置（错误块所在）
     scrollLatestIntoView();
+    updateClearBtnState();
     return el;
   }
 
@@ -386,6 +390,7 @@
     wrap.appendChild(h); wrap.appendChild(copy); wrap.appendChild(pre);
     blocksContainer.appendChild(wrap);
     attachCopy(copy, pre);
+    updateClearBtnState();
     return wrap;
   }
 
@@ -419,6 +424,7 @@
     if (requestPending) { showWaiting(); }
     // Scroll page so that the latest message sits at page top
     scrollLatestIntoView();
+    updateClearBtnState();
     return card;
   }
 
@@ -427,6 +433,18 @@
     messageTimeline.innerHTML = '';
     errorMessage.textContent = '';
     hideWaiting();
+    updateClearBtnState();
+  }
+
+  function updateClearBtnState() {
+    const hasTimeline = messageTimeline.children.length > 0;
+    const hasBlocks = blocksContainer.children.length > 0;
+    const isWaiting = waitingEl && waitingEl.parentNode === messageTimeline;
+
+    // 如果只有等待动画，视为无内容
+    const hasActualContent = hasBlocks || (hasTimeline && (!isWaiting || messageTimeline.children.length > 1));
+
+    clearBtn.disabled = !hasActualContent && !requestPending;
   }
 
   // Config modal events
@@ -639,6 +657,7 @@
     // 占位留空：不再动态写入 placeholder
     // 初始化厂商分组和测试按钮
     renderTestButtons('openai');
+    updateClearBtnState();
   });
 
   // 厂商分组配置
@@ -769,6 +788,8 @@
     testBtn.disabled = true; testBtn.textContent = '请求中...';
     // 发起新请求前自动清空历史记录
     clearResults();
+    requestPending = true; // 确保在 updateClearBtnState 之前设置
+    updateClearBtnState();
 
     currentAbortController = new AbortController();
     const signal = currentAbortController.signal;
@@ -1319,6 +1340,7 @@
       requestPending = false;
       hideWaiting();
       testBtn.disabled = false; testBtn.textContent = '发送测试请求';
+      updateClearBtnState();
     }
   });
 

@@ -1,4 +1,4 @@
-(function(){
+(function () {
   // Utilities
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -38,8 +38,8 @@
   let currentAbortController = null;
 
   // Abort current request helper
-  function abortCurrentRequest(){
-    if(currentAbortController){
+  function abortCurrentRequest() {
+    if (currentAbortController) {
       currentAbortController.abort();
       currentAbortController = null;
     }
@@ -48,19 +48,19 @@
   }
 
   // LocalStorage helpers
-  function loadConfigs(){
-    try { return JSON.parse(localStorage.getItem('apiConfigs')||'[]'); } catch { return []; }
+  function loadConfigs() {
+    try { return JSON.parse(localStorage.getItem('apiConfigs') || '[]'); } catch { return []; }
   }
-  function saveConfigs(cfgs){ localStorage.setItem('apiConfigs', JSON.stringify(cfgs)); }
+  function saveConfigs(cfgs) { localStorage.setItem('apiConfigs', JSON.stringify(cfgs)); }
 
   // URL helpers
-  function stripTrailingSlash(u){ return (u || '').replace(/\/+$/, ''); }
-  function normalizeApiUrl(u){
+  function stripTrailingSlash(u) { return (u || '').replace(/\/+$/, ''); }
+  function normalizeApiUrl(u) {
     let val = (u || '').trim();
-    if(!val) return val;
+    if (!val) return val;
     // 自动补全协议
-    if(!/^https?:\/\//i.test(val)) val = 'https://' + val;
-    try{
+    if (!/^https?:\/\//i.test(val)) val = 'https://' + val;
+    try {
       const url = new URL(val);
       // 只保留 origin（协议+域名+端口），路径由系统在不同场景下添加
       return url.origin;
@@ -69,16 +69,16 @@
       return stripTrailingSlash(val);
     }
   }
-  function buildEndpoint(base){ return stripTrailingSlash(base) + '/v1/chat/completions'; }
-  function buildGeminiEndpoint(base, model, apiKey){
+  function buildEndpoint(base) { return stripTrailingSlash(base) + '/v1/chat/completions'; }
+  function buildGeminiEndpoint(base, model, apiKey) {
     const root = stripTrailingSlash(base);
     return `${root}/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
   }
-  function buildAnthropicEndpoint(base){
+  function buildAnthropicEndpoint(base) {
     const root = stripTrailingSlash(base);
     return `${root}/v1/messages`;
   }
-  function buildResponsesEndpoint(base){
+  function buildResponsesEndpoint(base) {
     const root = stripTrailingSlash(base);
     return `${root}/v1/responses`;
   }
@@ -91,9 +91,9 @@
     model: ENV_CFG.model || 'gemini-2.5-pro'
   };
 
-  function displayConfigs(){
+  function displayConfigs() {
     const cfgs = loadConfigs();
-    if(cfgs.length === 0){
+    if (cfgs.length === 0) {
       configListEl.innerHTML = '<p style="color:#64748b;text-align:center;">暂无保存的配置</p>';
       return;
     }
@@ -126,15 +126,15 @@
   }
 
   // Escape HTML
-  function escapeHtml(s){
-    if(typeof s !== 'string') return '';
-    return s.replace(/[&<>"{}]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','{':'&#123;','}':'&#125;'}[m]));
+  function escapeHtml(s) {
+    if (typeof s !== 'string') return '';
+    return s.replace(/[&<>"{}]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '{': '&#123;', '}': '&#125;' }[m]));
   }
 
   // Copy helper
-  function attachCopy(btn, targetPre){
+  function attachCopy(btn, targetPre) {
     btn.addEventListener('click', () => {
-      navigator.clipboard.writeText(targetPre.textContent||'');
+      navigator.clipboard.writeText(targetPre.textContent || '');
       const orig = btn.textContent;
       btn.textContent = '已复制';
       setTimeout(() => btn.textContent = orig, 1500);
@@ -142,8 +142,8 @@
   }
 
   // Waiting inline loader helpers
-  function ensureWaitingEl(){
-    if(waitingEl) return waitingEl;
+  function ensureWaitingEl() {
+    if (waitingEl) return waitingEl;
     const wrap = document.createElement('div');
     wrap.className = 'waiting-inline';
     const label = document.createElement('span');
@@ -151,7 +151,7 @@
     label.textContent = '请求中';
     const dots = document.createElement('span');
     dots.className = 'dots';
-    for(let i=0;i<3;i++){
+    for (let i = 0; i < 3; i++) {
       const d = document.createElement('span');
       d.className = 'dot';
       dots.appendChild(d);
@@ -161,9 +161,9 @@
     waitingEl = wrap;
     return waitingEl;
   }
-  function showWaiting(){
+  function showWaiting() {
     const el = ensureWaitingEl();
-    if(el.parentNode !== messageTimeline){
+    if (el.parentNode !== messageTimeline) {
       messageTimeline.appendChild(el);
     } else {
       // 重新追加到末尾，确保在最新一条消息下方
@@ -171,12 +171,12 @@
       messageTimeline.appendChild(el);
     }
   }
-  function hideWaiting(){
-    if(waitingEl && waitingEl.parentNode){ waitingEl.parentNode.removeChild(waitingEl); }
+  function hideWaiting() {
+    if (waitingEl && waitingEl.parentNode) { waitingEl.parentNode.removeChild(waitingEl); }
   }
 
   // Info inline block (tip/warning)
-  function addInlineInfo(text){
+  function addInlineInfo(text) {
     const el = document.createElement('div');
     el.className = 'info-inline';
     el.textContent = String(text || '提示');
@@ -186,7 +186,7 @@
   }
 
   // Success inline block (green tip)
-  function addInlineSuccess(text){
+  function addInlineSuccess(text) {
     const el = document.createElement('div');
     el.className = 'success-inline';
     el.textContent = String(text || '成功');
@@ -196,7 +196,7 @@
   }
 
   // Error inline block under latest message
-  function addInlineError(text, raw){
+  function addInlineError(text, raw) {
     const el = document.createElement('div');
     el.className = 'error-inline';
     el.textContent = String(text || '发生未知错误');
@@ -204,16 +204,16 @@
     hideWaiting();
     messageTimeline.appendChild(el);
     // 附带原始内容（JSON/纯文本），不再渲染 HTML 预览
-    try{
+    try {
       const rawText = raw && raw.rawText;
       const ct = (raw && raw.contentType || '').toLowerCase();
-      if(rawText){
+      if (rawText) {
         const wrap = document.createElement('div');
         wrap.style.marginTop = '6px';
         // 若为 HTML 返回，补充友好提示
         const isHtml = ct.includes('text/html') || /^\s*<(!doctype|html|head|body)/i.test(rawText);
         let notice = null;
-        if(isHtml){
+        if (isHtml) {
           notice = document.createElement('div');
           notice.textContent = '检测到返回的是网页，您可能填写了错误的 API URL。';
           notice.style.color = '#b91c1c';
@@ -229,9 +229,9 @@
         pre.style.whiteSpace = 'pre-wrap';
         pre.style.wordBreak = 'break-all';
         // 尝试美化 JSON；否则原样输出
-        if(ct.includes('application/json')){
-          try{ pre.textContent = JSON.stringify(JSON.parse(rawText), null, 2); }
-          catch{ pre.textContent = rawText; }
+        if (ct.includes('application/json')) {
+          try { pre.textContent = JSON.stringify(JSON.parse(rawText), null, 2); }
+          catch { pre.textContent = rawText; }
         } else {
           pre.textContent = rawText;
         }
@@ -241,28 +241,28 @@
         // 点击提示或“查看原始返回”文字都可展开/收起
         const toggle = () => { details.open = !details.open; };
         sum.addEventListener('click', (e) => { /* 使用默认展开行为并扩大可点击区域 */ });
-        if(notice){
+        if (notice) {
           notice.addEventListener('click', toggle);
-          notice.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } });
+          notice.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
           notice.tabIndex = 0; // 可聚焦
         }
         el.appendChild(wrap);
       }
-    }catch{ /* 附加原始内容失败时安静降级 */ }
+    } catch { /* 附加原始内容失败时安静降级 */ }
     // 滚动到最新位置（错误块所在）
     scrollLatestIntoView();
     return el;
   }
 
   // Scroll helpers: keep latest message aligned to page top
-  function scrollLatestIntoView(){
+  function scrollLatestIntoView() {
     const cards = messageTimeline.querySelectorAll('.card.message');
-    if(cards.length === 0) return;
+    if (cards.length === 0) return;
     const last = cards[cards.length - 1];
     // 将最新消息滚动到页面顶部位置
-    try{
+    try {
       last.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
-    }catch{ /* 兼容性兜底 */
+    } catch { /* 兼容性兜底 */
       const top = window.scrollY + last.getBoundingClientRect().top;
       window.scrollTo({ top: Math.max(top - 8, 0), behavior: 'smooth' });
     }
@@ -270,8 +270,8 @@
 
   // App modal helpers (custom alert/confirm)
   let appModalEl = null;
-  function ensureAppModal(){
-    if(appModalEl) return appModalEl;
+  function ensureAppModal() {
+    if (appModalEl) return appModalEl;
     const overlay = document.createElement('div');
     overlay.className = 'app-modal';
     overlay.innerHTML = `
@@ -287,7 +287,7 @@
     appModalEl = overlay;
     return appModalEl;
   }
-  function openAppModal({ title = '提示', content = '', showCancel = false, okText = '确定', cancelText = '取消' } = {}){
+  function openAppModal({ title = '提示', content = '', showCancel = false, okText = '确定', cancelText = '取消' } = {}) {
     return new Promise((resolve) => {
       const el = ensureAppModal();
       const titleEl = el.querySelector('#appModalTitle');
@@ -311,8 +311,8 @@
       const onOk = () => { cleanup(); resolve(true); };
       const onCancel = () => { cleanup(); resolve(false); };
       // 点击空白：alert 视为确定；confirm 视为取消
-      const onBackdrop = (e) => { if(e.target === el){ showCancel ? onCancel() : onOk(); } };
-      const onKey = (e) => { if(e.key === 'Escape'){ showCancel ? onCancel() : onOk(); } };
+      const onBackdrop = (e) => { if (e.target === el) { showCancel ? onCancel() : onOk(); } };
+      const onKey = (e) => { if (e.key === 'Escape') { showCancel ? onCancel() : onOk(); } };
       okBtn.addEventListener('click', onOk);
       cancelBtn.addEventListener('click', onCancel);
       el.addEventListener('click', onBackdrop);
@@ -320,9 +320,9 @@
     });
   }
   // Toast helper
-  function showToast(msg, type = 'info'){
+  function showToast(msg, type = 'info') {
     let container = document.querySelector('.toast-container');
-    if(!container){
+    if (!container) {
       container = document.createElement('div');
       container.className = 'toast-container';
       document.body.appendChild(container);
@@ -332,7 +332,7 @@
     toast.textContent = msg;
     container.innerHTML = ''; // 每次只显示一个
     container.appendChild(toast);
-    
+
     // 触发动画
     requestAnimationFrame(() => {
       container.classList.add('show');
@@ -344,36 +344,36 @@
     }, 2000);
   }
 
-  function appAlert(message){ 
-    showToast(message, 'info'); 
-    return Promise.resolve(true); 
+  function appAlert(message) {
+    showToast(message, 'info');
+    return Promise.resolve(true);
   }
-  function appConfirm(message){ 
+  function appConfirm(message) {
     // Confirm 逻辑暂时保留原样或改为 Toast，但用户主要想要提示窗
-    return confirm(message); 
+    return confirm(message);
   }
 
   // Apply config helpers
-  function applyConfigToTop(cfg){
-    if(!cfg) return;
+  function applyConfigToTop(cfg) {
+    if (!cfg) return;
     apiUrlEl.value = cfg.url || SYSTEM_DEFAULTS.apiUrl;
     apiKeyEl.value = cfg.key || SYSTEM_DEFAULTS.apiKey;
     modelEl.value = cfg.model || SYSTEM_DEFAULTS.model;
   }
-  function applySystemDefaultToTop(){
+  function applySystemDefaultToTop() {
     apiUrlEl.value = SYSTEM_DEFAULTS.apiUrl;
     apiKeyEl.value = SYSTEM_DEFAULTS.apiKey;
     modelEl.value = SYSTEM_DEFAULTS.model;
   }
 
   // UI builders
-  function addBlock(title, payload, durationMs){
+  function addBlock(title, payload, durationMs) {
     const wrap = document.createElement('div');
     wrap.className = 'code-block';
     const h = document.createElement('div');
     h.className = 'title';
     // 如果有耗时，在标题后面追加
-    if(typeof durationMs === 'number' && durationMs >= 0){
+    if (typeof durationMs === 'number' && durationMs >= 0) {
       h.textContent = `${title} (${formatDuration(durationMs)})`;
     } else {
       h.textContent = title;
@@ -390,12 +390,12 @@
   }
 
   // 格式化耗时
-  function formatDuration(ms){
-    if(ms < 1000) return `${ms}ms`;
+  function formatDuration(ms) {
+    if (ms < 1000) return `${ms}ms`;
     return `${(ms / 1000).toFixed(2)}s`;
   }
 
-  function addMessage(role, label, payload){
+  function addMessage(role, label, payload) {
     const card = document.createElement('div');
     card.className = `card message ${role}`;
     const title = document.createElement('div');
@@ -416,13 +416,13 @@
     card.appendChild(pre);
     messageTimeline.appendChild(card);
     // Keep waiting loader under the latest message while pending
-    if(requestPending){ showWaiting(); }
+    if (requestPending) { showWaiting(); }
     // Scroll page so that the latest message sits at page top
     scrollLatestIntoView();
     return card;
   }
 
-  function clearResults(){
+  function clearResults() {
     blocksContainer.innerHTML = '';
     messageTimeline.innerHTML = '';
     errorMessage.textContent = '';
@@ -437,31 +437,31 @@
     displayConfigs();
   });
   closeConfigModalBtn.addEventListener('click', () => configModal.classList.remove('open'));
-  window.addEventListener('click', (e) => { if(e.target === configModal) configModal.classList.remove('open'); });
+  window.addEventListener('click', (e) => { if (e.target === configModal) configModal.classList.remove('open'); });
   window.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape'){
+    if (e.key === 'Escape') {
       // 若有自定义弹窗打开，仅关闭自定义弹窗，不关闭配置页
-      if(document.querySelector('.app-modal.open')) return;
+      if (document.querySelector('.app-modal.open')) return;
       configModal.classList.remove('open');
     }
   });
 
   configListEl.addEventListener('click', (e) => {
     const starBtn = e.target.closest('[data-star]');
-    if(starBtn){
-      const idx = parseInt(starBtn.getAttribute('data-star'),10);
+    if (starBtn) {
+      const idx = parseInt(starBtn.getAttribute('data-star'), 10);
       const cfgs = loadConfigs();
       const wasDefault = !!(cfgs[idx] && cfgs[idx].isDefault);
-      if(wasDefault){
+      if (wasDefault) {
         // 取消默认，恢复系统预设
-        cfgs.forEach((c) => { if(c) c.isDefault = false; });
+        cfgs.forEach((c) => { if (c) c.isDefault = false; });
         saveConfigs(cfgs);
         displayConfigs();
         applySystemDefaultToTop();
         appAlert('已取消默认，已恢复系统预设');
       } else {
         // 设为默认，并应用到顶部
-        cfgs.forEach((c, i) => { if(c) c.isDefault = (i === idx); });
+        cfgs.forEach((c, i) => { if (c) c.isDefault = (i === idx); });
         saveConfigs(cfgs);
         displayConfigs();
         applyConfigToTop(cfgs[idx]);
@@ -470,28 +470,28 @@
       return;
     }
     const delBtn = e.target.closest('[data-del]');
-    if(delBtn){
-      const idx = parseInt(delBtn.getAttribute('data-del'),10);
+    if (delBtn) {
+      const idx = parseInt(delBtn.getAttribute('data-del'), 10);
       // 二次确认逻辑：首次点击进入确认态，显示问号；再次点击才删除
-      if(!delBtn.classList.contains('confirm')){
+      if (!delBtn.classList.contains('confirm')) {
         delBtn.classList.add('confirm');
         // 定时自动恢复
-        if(delBtn._confirmTimer) clearTimeout(delBtn._confirmTimer);
-        delBtn._confirmTimer = setTimeout(() => { try{ delBtn.classList.remove('confirm'); }catch{} delBtn._confirmTimer=null; }, 2500);
+        if (delBtn._confirmTimer) clearTimeout(delBtn._confirmTimer);
+        delBtn._confirmTimer = setTimeout(() => { try { delBtn.classList.remove('confirm'); } catch { } delBtn._confirmTimer = null; }, 2500);
         return;
       }
-      if(delBtn._confirmTimer){ clearTimeout(delBtn._confirmTimer); delBtn._confirmTimer=null; }
+      if (delBtn._confirmTimer) { clearTimeout(delBtn._confirmTimer); delBtn._confirmTimer = null; }
       const cfgs = loadConfigs();
-      cfgs.splice(idx,1);
+      cfgs.splice(idx, 1);
       saveConfigs(cfgs);
       displayConfigs();
       return;
     }
     const editBtn = e.target.closest('[data-edit]');
-    if(editBtn){
-      const idx = parseInt(editBtn.getAttribute('data-edit'),10);
+    if (editBtn) {
+      const idx = parseInt(editBtn.getAttribute('data-edit'), 10);
       const cfg = loadConfigs()[idx];
-      if(cfg){
+      if (cfg) {
         editingIndex = idx;
         configNameEl.value = cfg.name || '';
         configUrlEl.value = cfg.url || '';
@@ -499,19 +499,19 @@
         configModelEl.value = cfg.model || SYSTEM_DEFAULTS.model;
         saveConfigBtn.textContent = '保存修改';
         cancelEditBtn.style.display = '';
-        if(saveAsDefaultBtn) saveAsDefaultBtn.style.display = 'none';
+        if (saveAsDefaultBtn) saveAsDefaultBtn.style.display = 'none';
         // 保存按钮切换为蓝色
-        if(saveConfigBtn){ saveConfigBtn.classList.remove('btn-secondary'); saveConfigBtn.classList.add('btn-primary'); }
-        if(configModalTitleEl) configModalTitleEl.textContent = '修改 API 配置';
-        if(modalFormHeadingEl) modalFormHeadingEl.textContent = '修改配置';
+        if (saveConfigBtn) { saveConfigBtn.classList.remove('btn-secondary'); saveConfigBtn.classList.add('btn-primary'); }
+        if (configModalTitleEl) configModalTitleEl.textContent = '修改 API 配置';
+        if (modalFormHeadingEl) modalFormHeadingEl.textContent = '修改配置';
       }
       return;
     }
     const item = e.target.closest('.config-item');
-    if(!item) return;
+    if (!item) return;
     const index = parseInt(item.getAttribute('data-index'), 10);
     const cfg = loadConfigs()[index];
-    if(cfg){
+    if (cfg) {
       apiUrlEl.value = cfg.url || '';
       apiKeyEl.value = cfg.key || '';
       modelEl.value = cfg.model || SYSTEM_DEFAULTS.model;
@@ -525,9 +525,9 @@
     const url = stripTrailingSlash(configUrlEl.value.trim());
     const key = configKeyEl.value.trim();
     const model = (configModelEl.value || SYSTEM_DEFAULTS.model).trim();
-    if(!name || !url || !key){ await appAlert('请填写所有必填字段'); return; }
+    if (!name || !url || !key) { await appAlert('请填写所有必填字段'); return; }
     const cfgs = loadConfigs();
-    if(editingIndex !== null){
+    if (editingIndex !== null) {
       const prev = cfgs[editingIndex] || {};
       cfgs[editingIndex] = { ...prev, name, url, key, model };
     } else {
@@ -540,16 +540,16 @@
   });
 
   // 保存为默认配置：将该项设为唯一默认，并立即应用到顶部
-  if(saveAsDefaultBtn){
+  if (saveAsDefaultBtn) {
     saveAsDefaultBtn.addEventListener('click', async () => {
       const name = configNameEl.value.trim();
       const url = stripTrailingSlash(configUrlEl.value.trim());
       const key = configKeyEl.value.trim();
       const model = (configModelEl.value || SYSTEM_DEFAULTS.model).trim();
-      if(!name || !url || !key){ await appAlert('请填写所有必填字段'); return; }
+      if (!name || !url || !key) { await appAlert('请填写所有必填字段'); return; }
       const cfgs = loadConfigs();
       let idx;
-      if(editingIndex !== null){
+      if (editingIndex !== null) {
         const prev = cfgs[editingIndex] || {};
         cfgs[editingIndex] = { ...prev, name, url, key, model, isDefault: true };
         idx = editingIndex;
@@ -558,7 +558,7 @@
         idx = cfgs.length - 1;
       }
       // 唯一默认
-      cfgs.forEach((c, i) => { if(i !== idx && c) c.isDefault = false; });
+      cfgs.forEach((c, i) => { if (i !== idx && c) c.isDefault = false; });
       saveConfigs(cfgs);
       applyConfigToTop(cfgs[idx]);
       clearEditForm();
@@ -567,7 +567,7 @@
     });
   }
 
-  function clearEditForm(){
+  function clearEditForm() {
     editingIndex = null;
     configNameEl.value = '';
     configUrlEl.value = '';
@@ -575,11 +575,11 @@
     configModelEl.value = SYSTEM_DEFAULTS.model;
     saveConfigBtn.textContent = '保存配置';
     cancelEditBtn.style.display = 'none';
-    if(saveAsDefaultBtn) saveAsDefaultBtn.style.display = '';
+    if (saveAsDefaultBtn) saveAsDefaultBtn.style.display = '';
     // 保存按钮恢复为灰色
-    if(saveConfigBtn){ saveConfigBtn.classList.remove('btn-primary'); saveConfigBtn.classList.add('btn-secondary'); }
-    if(configModalTitleEl) configModalTitleEl.textContent = '管理 API 配置';
-    if(modalFormHeadingEl) modalFormHeadingEl.textContent = '添加新配置';
+    if (saveConfigBtn) { saveConfigBtn.classList.remove('btn-primary'); saveConfigBtn.classList.add('btn-secondary'); }
+    if (configModalTitleEl) configModalTitleEl.textContent = '管理 API 配置';
+    if (modalFormHeadingEl) modalFormHeadingEl.textContent = '添加新配置';
   }
 
   cancelEditBtn.addEventListener('click', () => {
@@ -590,15 +590,15 @@
 
   // Defaults
   // Password toggle functionality
-  function initPasswordToggles(){
+  function initPasswordToggles() {
     document.querySelectorAll('.password-toggle').forEach(btn => {
       btn.addEventListener('click', () => {
         const targetId = btn.getAttribute('data-target');
         const input = document.getElementById(targetId);
         const eyeIcon = btn.querySelector('.eye-icon');
         const eyeOffIcon = btn.querySelector('.eye-off-icon');
-        
-        if(input.type === 'password'){
+
+        if (input.type === 'password') {
           input.type = 'text';
           eyeIcon.style.display = 'none';
           eyeOffIcon.style.display = 'block';
@@ -624,17 +624,17 @@
   window.addEventListener('load', () => {
     // 初始化密码切换功能
     initPasswordToggles();
-    
+
     // 自动应用默认配置
     const cfgs = loadConfigs();
     const d = cfgs.find(c => c && c.isDefault);
-    if(d){
+    if (d) {
       apiUrlEl.value = d.url || apiUrlEl.value || SYSTEM_DEFAULTS.apiUrl;
       apiKeyEl.value = d.key || SYSTEM_DEFAULTS.apiKey;
       modelEl.value = d.model || modelEl.value || SYSTEM_DEFAULTS.model;
     } else {
-      if(!apiUrlEl.value){ apiUrlEl.value = SYSTEM_DEFAULTS.apiUrl; }
-      if(!modelEl.value){ modelEl.value = SYSTEM_DEFAULTS.model; }
+      if (!apiUrlEl.value) { apiUrlEl.value = SYSTEM_DEFAULTS.apiUrl; }
+      if (!modelEl.value) { modelEl.value = SYSTEM_DEFAULTS.model; }
     }
     // 占位留空：不再动态写入 placeholder
     // 初始化厂商分组和测试按钮
@@ -644,37 +644,82 @@
   // 厂商分组配置
   const vendorTests = {
     openai: [
-      { scenario: 'openai_tools', label: '工具调用 (Chat Completions)', defaultInput: '当前时间是？' },
-      { scenario: 'responses_tools', label: '工具调用 (Responses)', defaultInput: '当前时间是？' },
+      { scenario: 'openai_tools', label: '工具调用 (Chat Completions)', defaultInput: 'RANDOM_CONVERT_TASK' },
+      { scenario: 'responses_tools', label: '工具调用 (Responses)', defaultInput: 'RANDOM_CONVERT_TASK' },
       { scenario: 'responses_search', label: '搜索 (Responses)', defaultInput: '搜索当前最新的Gemini旗舰模型是？' }
     ],
     anthropic: [
-      { scenario: 'anthropic_tools', label: '工具调用', defaultInput: '当前时间是？' }
+      { scenario: 'anthropic_tools', label: '工具调用', defaultInput: 'RANDOM_CONVERT_TASK' }
     ],
     google: [
-      { scenario: 'gemini_tools', label: '工具调用', defaultInput: '当前时间是？' },
+      { scenario: 'gemini_tools', label: '工具调用', defaultInput: 'RANDOM_CONVERT_TASK' },
       { scenario: 'gemini_search', label: '搜索', defaultInput: '搜索当前最新的Gemini旗舰模型是？' },
       { scenario: 'gemini_url_context', label: 'URL 上下文', defaultInput: '这个工具有哪些特点？https://ai.google.dev/gemini-api/docs/url-context' }
     ]
   };
 
+  let activeExpectedAnswer = null;
+  function generateRandomTask() {
+    const val = Math.floor(Math.random() * 16777215);
+    const bases = [2, 8, 10, 16];
+    const baseNames = { 2: '二进制', 8: '八进制', 10: '十进制', 16: '十六进制' };
+
+    // 随机选择三个互不相同的进制
+    let shuffled = [...bases].sort(() => 0.5 - Math.random());
+    const [b1, b2, b3] = shuffled;
+
+    const startNum = val.toString(b1).toUpperCase();
+    activeExpectedAnswer = val.toString(b3).toUpperCase();
+
+    return `请将${baseNames[b1]}数 ${startNum} 转换为${baseNames[b2]}，然后再将该${baseNames[b2]}结果转换为${baseNames[b3]}。待转换完成后，你必须调用 submit_answer 工具提交最终的${baseNames[b3]}结果，系统将验证你的答案是否正确。`;
+  }
+
   // 当前选中的厂商
   let currentVendor = 'openai';
 
+  // 切换测试场景工具函数
+  function applyScenarioInput(scenario, defaultInput) {
+    const isToolScenario = ['openai_tools', 'anthropic_tools', 'gemini_tools', 'responses_tools'].includes(scenario);
+    const label = document.querySelector('label[for="userInput"]');
+
+    if (isToolScenario) {
+      if (defaultInput === 'RANDOM_CONVERT_TASK') {
+        userInputEl.value = generateRandomTask();
+      } else {
+        userInputEl.value = defaultInput;
+      }
+      userInputEl.readOnly = true;
+      if (label && !label.querySelector('.label-hint')) {
+        label.style.display = 'flex';
+        label.style.alignItems = 'center';
+        const hint = document.createElement('span');
+        hint.className = 'label-hint';
+        hint.style.cssText = 'color: #94a3b8; font-size: 0.75rem; font-weight: normal; margin-left: 8px; line-height: 1.4;';
+        hint.textContent = '(系统会自动验证，无需修改)';
+        label.appendChild(hint);
+      }
+    } else {
+      userInputEl.value = defaultInput;
+      userInputEl.readOnly = false;
+      const hint = label ? label.querySelector('.label-hint') : null;
+      if (hint) hint.remove();
+    }
+  }
+
   // 渲染测试按钮
-  function renderTestButtons(vendor){
+  function renderTestButtons(vendor) {
     const tests = vendorTests[vendor] || [];
-    testTypeWrap.innerHTML = tests.map((t, i) => 
+    testTypeWrap.innerHTML = tests.map((t, i) =>
       `<button class="seg-btn${i === 0 ? ' active' : ''}" data-scenario="${t.scenario}">${t.label}</button>`
     ).join('');
     // 设置默认输入
-    if(tests.length > 0){
-      userInputEl.value = tests[0].defaultInput;
+    if (tests.length > 0) {
+      applyScenarioInput(tests[0].scenario, tests[0].defaultInput);
     }
   }
 
   // 切换厂商
-  function setActiveVendor(vendor){
+  function setActiveVendor(vendor) {
     abortCurrentRequest();
     currentVendor = vendor;
     $$('#vendorType .seg-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.vendor === vendor));
@@ -683,31 +728,31 @@
   }
 
   // 切换测试场景
-  function setActiveScenario(scenario){
+  function setActiveScenario(scenario) {
     abortCurrentRequest();
     $$('#testType .seg-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.scenario === scenario));
     // 查找对应的默认输入
     const tests = vendorTests[currentVendor] || [];
     const test = tests.find(t => t.scenario === scenario);
-    if(test){
-      userInputEl.value = test.defaultInput;
+    if (test) {
+      applyScenarioInput(scenario, test.defaultInput);
     }
   }
 
   // 厂商切换事件
-  if(vendorTypeWrap){
+  if (vendorTypeWrap) {
     vendorTypeWrap.addEventListener('click', (e) => {
       const btn = e.target.closest('.seg-btn');
-      if(!btn || !btn.dataset.vendor) return;
+      if (!btn || !btn.dataset.vendor) return;
       setActiveVendor(btn.dataset.vendor);
     });
   }
 
   // 测试场景切换事件
-  if(testTypeWrap){
+  if (testTypeWrap) {
     testTypeWrap.addEventListener('click', (e) => {
       const btn = e.target.closest('.seg-btn');
-      if(!btn || !btn.dataset.scenario) return;
+      if (!btn || !btn.dataset.scenario) return;
       setActiveScenario(btn.dataset.scenario);
       clearResults();
     });
@@ -719,7 +764,7 @@
     const apiUrl = apiUrlEl.value.trim();
     const apiKey = apiKeyEl.value.trim();
     const model = (modelEl.value || SYSTEM_DEFAULTS.model).trim();
-    if(!apiUrl || !apiKey){ await appAlert('请填写 API URL 和 API Key'); return; }
+    if (!apiUrl || !apiKey) { await appAlert('请填写 API URL 和 API Key'); return; }
     errorMessage.textContent = '';
     testBtn.disabled = true; testBtn.textContent = '请求中...';
     // 发起新请求前自动清空历史记录
@@ -733,302 +778,452 @@
     const geminiEndpoint = buildGeminiEndpoint(apiUrl, model, apiKey);
     const anthropicEndpoint = buildAnthropicEndpoint(apiUrl);
 
-    try{
+    try {
       requestPending = true; showWaiting();
-      const userText = userInputEl.value.trim() || '当前时间是？';
-      if(scenario === 'openai_tools'){
-        // OpenAI: function call time query
-        const requestBody1 = {
-          model,
-          messages: [ { role: 'user', content: userText } ],
-          tools: [
-            {
-              type: 'function',
-              function: {
-                name: 'get_current_time',
-                description: '获取当前的日期和时间',
-                parameters: {
-                  type: 'object',
-                  properties: {},
-                  required: []
-                }
-              }
-            }
-          ],
-          tool_choice: 'auto'
-        };
-        addBlock('请求 #1', requestBody1);
-        addMessage('user', '消息 #1', requestBody1.messages[0]);
+      let userText = userInputEl.value.trim() || '当前时间是？';
 
-        const t1Start = Date.now();
-        const r1 = await fetchAndParse(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(requestBody1), signal });
-        const data1 = ensureJsonOrThrow(r1);
-        const t1Duration = Date.now() - t1Start;
-        addBlock('响应 #1', data1, t1Duration);
-
-        const choice = data1.choices && data1.choices[0];
-        if(!choice){ throw new Error('响应无 choices'); }
-        const assistantMsg = choice.message;
-        addMessage('assistant', '消息 #2', assistantMsg);
-
-        const toolCall = assistantMsg && assistantMsg.tool_calls && assistantMsg.tool_calls[0];
-        if(!toolCall){
-          addInlineInfo('未触发工具调用：模型可能未理解指令，或 API 异常。');
-          return;
+      // 如果是工具场景且输入是默认标记，则生成随机题目
+      if (['openai_tools', 'anthropic_tools', 'gemini_tools', 'responses_tools'].includes(scenario)) {
+        if (userText === 'RANDOM_CONVERT_TASK' || userText.includes('ABCDEF12')) {
+          userText = generateRandomTask();
+          userInputEl.value = userText;
         }
-
-        // Simulate tool execution
-        const now = new Date();
-        const datePart = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        const weekday = now.toLocaleDateString('zh-CN', { weekday: 'long' });
-        const timePart = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        const currentTime = `${datePart} ${weekday} ${timePart}`;
-        const toolMessage = {
-          role: 'tool',
-          content: JSON.stringify({ current_time: currentTime }),
-          tool_call_id: toolCall.id
-        };
-        addMessage('tool', '消息 #3 (工具返回结果)', { current_time: currentTime });
-
-        const requestBody2 = { model, messages: [ requestBody1.messages[0], assistantMsg, toolMessage ] };
-        const t2Start = Date.now();
-        addBlock('请求 #2', requestBody2);
-        const r2 = await fetchAndParse(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(requestBody2), signal });
-        const data2 = ensureJsonOrThrow(r2);
-        const t2Duration = Date.now() - t2Start;
-        addBlock('响应 #2', data2, t2Duration);
-        const finalChoice = data2.choices && data2.choices[0];
-        if(finalChoice && finalChoice.message){ addMessage('assistant', '消息 #4 (最终回答)', finalChoice.message); }
       }
-      else if(scenario === 'anthropic_tools'){
-        // Anthropic Messages: function/tool use (two-step)
-        const aReq1 = {
-          model,
-          max_tokens: 256,
-          messages: [ { role: 'user', content: userText } ],
-          tools: [
-            {
-              name: 'get_current_time',
-              description: '获取当前的日期和时间',
-              input_schema: { type: 'object', properties: {}, required: [] }
-            }
-          ]
-        };
-        addBlock('请求 #1', aReq1);
-        addMessage('user', '消息 #1', aReq1.messages[0]);
-        const aT1Start = Date.now();
-        const aR1 = await fetchAndParse(anthropicEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify(aReq1),
-          signal
-        });
-        const aData1 = ensureJsonOrThrow(aR1);
-        const aT1Duration = Date.now() - aT1Start;
-        addBlock('响应 #1', aData1, aT1Duration);
 
-        // find tool_use
-        const contentArr1 = Array.isArray(aData1 && aData1.content) ? aData1.content : [];
-        const toolUse = contentArr1.find(p => p && p.type === 'tool_use');
-        if(!toolUse){ addInlineInfo('未触发工具调用：模型可能未理解指令，或 API 异常。'); return; }
-        addMessage('assistant', '消息 #2', Array.isArray(aData1 && aData1.content) ? aData1.content : aData1);
-
-        // Simulate tool result
-        const now = new Date();
-        const datePart = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        const weekday = now.toLocaleDateString('zh-CN', { weekday: 'long' });
-        const timePart = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        const currentTime = `${datePart} ${weekday} ${timePart}`;
-        const toolResultMsg = {
-          role: 'user',
-          content: [ { type: 'tool_result', tool_use_id: toolUse.id, content: JSON.stringify({ current_time: currentTime }) } ]
-        };
-        addMessage('tool', '消息 #3 (工具返回结果)', { current_time: currentTime });
-
-        const aReq2 = {
-          model,
-          max_tokens: 256,
-          messages: [
-            { role: 'user', content: userText },
-            { role: 'assistant', content: [ toolUse ] },
-            toolResultMsg
-          ]
-        };
-        const aT2Start = Date.now();
-        addBlock('请求 #2', aReq2);
-        const aR2 = await fetchAndParse(anthropicEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify(aReq2),
-          signal
-        });
-        const aData2 = ensureJsonOrThrow(aR2);
-        const aT2Duration = Date.now() - aT2Start;
-        addBlock('响应 #2', aData2, aT2Duration);
-        addMessage('assistant', '消息 #4 (最终回答)', Array.isArray(aData2 && aData2.content) ? aData2.content : aData2);
-      }
-      else if(scenario === 'gemini_tools'){
-        // Gemini: function calling (two-step)
-        const gReq1 = {
-          systemInstruction: { parts: [{ text: '你是一个有帮助的助手。' }] },
-          tools: [{ functionDeclarations: [
-            {
-              name: 'get_current_time',
-              description: '获取当前的日期和时间',
-              parameters: { type: 'object', properties: {}, required: [] }
-            }
-          ]}],
-          toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
-          contents: [{ role: 'user', parts: [{ text: userText }] }]
-        };
-        addBlock('请求 #1', gReq1);
-        addMessage('user', '消息 #1', { role: 'user', parts: [{ text: userText }] });
-        const gT1Start = Date.now();
-        const gR1 = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq1), signal });
-        const gData1 = ensureJsonOrThrow(gR1);
-        const gT1Duration = Date.now() - gT1Start;
-        addBlock('响应 #1', gData1, gT1Duration);
-
-        const gCand1 = gData1.candidates && gData1.candidates[0];
-        const gContent1 = gCand1 && gCand1.content;
-        if(gContent1){ addMessage('assistant', '消息 #2', gContent1); }
-
-        // Detect functionCall in parts
-        let fc = null;
-        if(gContent1 && Array.isArray(gContent1.parts)){
-          for(const p of gContent1.parts){ if(p.functionCall){ fc = p.functionCall; break; } }
-        }
-        if(!fc){
-          addInlineInfo('未触发工具调用：模型可能未理解指令，或 API 异常。');
-          return;
-        }
-
-        // Simulate tool result
-        const now = new Date();
-        const datePart = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        const weekday = now.toLocaleDateString('zh-CN', { weekday: 'long' });
-        const timePart = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        const currentTime = `${datePart} ${weekday} ${timePart}`;
-        const funcResponsePart = { functionResponse: { name: fc.name || 'get_current_time', response: { current_time: currentTime } } };
-        addMessage('tool', '消息 #3 (工具返回结果)', funcResponsePart.functionResponse.response);
-
-        const gReq2 = {
-          contents: [
-            { role: 'user', parts: [{ text: userText }] },
-            gContent1,
-            { role: 'function', parts: [ funcResponsePart ] }
-          ]
-        };
-        const gT2Start = Date.now();
-        addBlock('请求 #2', gReq2);
-        const gR2 = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq2), signal });
-        const gData2 = ensureJsonOrThrow(gR2);
-        const gT2Duration = Date.now() - gT2Start;
-        addBlock('响应 #2', gData2, gT2Duration);
-        const gCand2 = gData2.candidates && gData2.candidates[0];
-        if(gCand2 && gCand2.content){ addMessage('assistant', '消息 #4 (最终回答)', gCand2.content); }
-      }
-      else if(scenario === 'responses_tools'){
-        // OpenAI Responses API with function tool
-        const responsesEndpoint = buildResponsesEndpoint(apiUrl);
-        const rtReq1 = {
-          model,
-          tools: [
-            {
-              type: 'function',
-              name: 'get_current_time',
-              description: '获取当前的日期和时间',
+      if (scenario === 'openai_tools') {
+        const tools = [
+          {
+            type: 'function',
+            function: {
+              name: 'convert_base',
+              description: '将数字从一种进制转换为另一种进制',
               parameters: {
                 type: 'object',
-                properties: {},
-                required: []
+                properties: {
+                  number: { type: 'string', description: '待转换的数字' },
+                  from_base: { type: 'integer', description: '原进制 (如 2, 10, 16)' },
+                  to_base: { type: 'integer', description: '目标进制 (如 2, 10, 16)' }
+                },
+                required: ['number', 'from_base', 'to_base']
               }
             }
-          ],
-          input: userText || '当前时间是？'
-        };
-        addBlock('请求 #1', rtReq1);
-        addMessage('user', '消息 #1', { input: rtReq1.input });
-        const rtT1Start = Date.now();
-        const rtR1 = await fetchAndParse(responsesEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify(rtReq1),
-          signal
-        });
-        const rtData1 = ensureJsonOrThrow(rtR1);
-        const rtT1Duration = Date.now() - rtT1Start;
-        addBlock('响应 #1', rtData1, rtT1Duration);
-
-        // 检测是否存在 function_call
-        const rtOutput1 = rtData1.output;
-        let functionCall = null;
-        if(Array.isArray(rtOutput1)){
-          const fcItem = rtOutput1.find(item => item && item.type === 'function_call');
-          if(fcItem){ functionCall = fcItem; }
-        }
-        if(!functionCall){
-          // 显示回答内容（如果有）
-          if(rtData1.output_text){
-            addMessage('assistant', '回答', { text: rtData1.output_text });
-          } else if(Array.isArray(rtOutput1)){
-            const msgItem = rtOutput1.find(item => item && item.type === 'message');
-            if(msgItem && msgItem.content){
-              addMessage('assistant', '回答', msgItem.content);
+          },
+          {
+            type: 'function',
+            function: {
+              name: 'submit_answer',
+              description: '提交最终计算出的结果答案以供验证',
+              parameters: {
+                type: 'object',
+                properties: {
+                  answer: { type: 'string', description: '最终转换出的字符串结果' }
+                },
+                required: ['answer']
+              }
             }
           }
-          addInlineInfo('未触发工具调用：模型可能未理解指令，或 API 异常。');
-          return;
-        }
-        addMessage('assistant', '消息 #2', functionCall);
+        ];
 
-        // Simulate tool result
-        const now = new Date();
-        const datePart = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        const weekday = now.toLocaleDateString('zh-CN', { weekday: 'long' });
-        const timePart = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        const currentTime = `${datePart} ${weekday} ${timePart}`;
-        addMessage('tool', '消息 #3 (工具返回结果)', { current_time: currentTime });
+        let messages = [{ role: 'user', content: userText }];
+        addMessage('user', '用户消息 #1', messages[0]);
 
-        const rtReq2 = {
-          model,
-          input: [
-            { type: 'function_call_output', call_id: functionCall.call_id, output: JSON.stringify({ current_time: currentTime }) }
-          ],
-          previous_response_id: rtData1.id
-        };
-        const rtT2Start = Date.now();
-        addBlock('请求 #2', rtReq2);
-        const rtR2 = await fetchAndParse(responsesEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify(rtReq2),
-          signal
-        });
-        const rtData2 = ensureJsonOrThrow(rtR2);
-        const rtT2Duration = Date.now() - rtT2Start;
-        addBlock('响应 #2', rtData2, rtT2Duration);
+        let turn = 1;
+        let hasSubmittedAnswer = false;
+        let validationStatus = null; // null: not run, true: correct, false: error
+        let validationMsg = '';
 
-        // 显示最终回答
-        if(rtData2.output_text){
-          addMessage('assistant', '消息 #4 (最终回答)', { text: rtData2.output_text });
-        } else if(Array.isArray(rtData2.output)){
-          const msgItem = rtData2.output.find(item => item && item.type === 'message');
-          if(msgItem && msgItem.content){
-            addMessage('assistant', '消息 #4 (最终回答)', msgItem.content);
+        const MAX_TURNS = 8;
+        while (turn <= MAX_TURNS) {
+          const requestBody = { model, messages, tools, tool_choice: 'auto' };
+          addBlock(`请求 #${turn}`, requestBody);
+
+          const tStart = Date.now();
+          const r = await fetchAndParse(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify(requestBody),
+            signal
+          });
+          const data = ensureJsonOrThrow(r);
+          const duration = Date.now() - tStart;
+          addBlock(`响应 #${turn}`, data, duration);
+
+          const choice = data.choices && data.choices[0];
+          if (!choice) break;
+          const assistantMsg = choice.message;
+          messages.push(assistantMsg);
+          addMessage('assistant', `模型响应 #${turn}`, assistantMsg);
+
+          if (assistantMsg.tool_calls && assistantMsg.tool_calls.length > 0) {
+            for (const toolCall of assistantMsg.tool_calls) {
+              let toolResults = { error: 'Unknown function' };
+              if (toolCall.function.name === 'convert_base') {
+                try {
+                  const args = JSON.parse(toolCall.function.arguments || '{}');
+                  const val = parseInt(args.number, args.from_base);
+                  toolResults = isNaN(val) ? { error: 'Invalid input' } : { result: val.toString(args.to_base) };
+                } catch (e) { toolResults = { error: e.message }; }
+              } else if (toolCall.function.name === 'submit_answer') {
+                hasSubmittedAnswer = true;
+                try {
+                  const args = JSON.parse(toolCall.function.arguments || '{}');
+                  const isCorrect = String(args.answer).toUpperCase() === activeExpectedAnswer;
+                  validationStatus = isCorrect;
+                  toolResults = { success: isCorrect, message: isCorrect ? '验证通过！答案正确。' : `验证失败。预期结果为: ${activeExpectedAnswer}` };
+                  if (isCorrect) {
+                    validationMsg = '经过多轮工具调用，模型成功识别并完成了任务，且最终答案验证正确！';
+                  } else {
+                    validationMsg = `经过多轮工具调用，模型虽然尝试完成任务，但最终提交的答案验证错误（提交值: ${args.answer}）。`;
+                  }
+                } catch (e) { toolResults = { error: e.message }; }
+              }
+              const toolMessage = {
+                role: 'tool',
+                content: JSON.stringify(toolResults),
+                tool_call_id: toolCall.id
+              };
+              messages.push(toolMessage);
+              addMessage('tool', `工具执行 #${turn}`, toolResults);
+            }
+            turn++;
+          } else {
+            break;
           }
         }
+
+        if (validationStatus === true) addInlineSuccess(validationMsg);
+        else if (validationStatus === false) addInlineError(validationMsg);
+        else if (!hasSubmittedAnswer) addInlineInfo('模型未执行最终的答案提交工具，流程提前结束。');
       }
-      else if(scenario === 'responses_search'){
-        // OpenAI Responses API with web_search tool
+      else if (scenario === 'anthropic_tools') {
+        const tools = [
+          {
+            name: 'convert_base',
+            description: '将数字从一种进制转换为另一种进制',
+            input_schema: {
+              type: 'object',
+              properties: {
+                number: { type: 'string', description: '待转换的数字' },
+                from_base: { type: 'integer', description: '原进制 (如 2, 10, 16)' },
+                to_base: { type: 'integer', description: '目标进制 (如 2, 10, 16)' }
+              },
+              required: ['number', 'from_base', 'to_base']
+            }
+          },
+          {
+            name: 'submit_answer',
+            description: '提交最终计算出的结果答案以供验证',
+            input_schema: {
+              type: 'object',
+              properties: {
+                answer: { type: 'string', description: '最终转换出的字符串结果' }
+              },
+              required: ['answer']
+            }
+          }
+        ];
+
+        let messages = [{ role: 'user', content: userText }];
+        addMessage('user', '用户消息 #1', messages[0]);
+
+        let turn = 1;
+        let hasSubmittedAnswer = false;
+        let validationStatus = null;
+        let validationMsg = '';
+
+        const MAX_TURNS = 8;
+        while (turn <= MAX_TURNS) {
+          const aReq = {
+            model,
+            max_tokens: 1024,
+            messages,
+            tools
+          };
+          addBlock(`请求 #${turn}`, aReq);
+          const aTStart = Date.now();
+          const aR = await fetchAndParse(anthropicEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+            body: JSON.stringify(aReq),
+            signal
+          });
+          const aData = ensureJsonOrThrow(aR);
+          const aTDuration = Date.now() - aTStart;
+          addBlock(`响应 #${turn}`, aData, aTDuration);
+
+          const contentArr = Array.isArray(aData && aData.content) ? aData.content : [];
+          messages.push({ role: 'assistant', content: contentArr });
+          addMessage('assistant', `模型响应 #${turn}`, contentArr);
+
+          const toolUses = contentArr.filter(p => p && p.type === 'tool_use');
+          if (toolUses.length > 0) {
+            const toolResultsParts = [];
+            for (const toolUse of toolUses) {
+              let toolResults = { error: 'Unknown function' };
+              if (toolUse.name === 'convert_base') {
+                try {
+                  const args = toolUse.input || {};
+                  const val = parseInt(args.number, args.from_base);
+                  toolResults = isNaN(val) ? { error: 'Invalid input' } : { result: val.toString(args.to_base) };
+                } catch (e) { toolResults = { error: e.message }; }
+              } else if (toolUse.name === 'submit_answer') {
+                hasSubmittedAnswer = true;
+                try {
+                  const args = toolUse.input || {};
+                  const isCorrect = String(args.answer).toUpperCase() === activeExpectedAnswer;
+                  validationStatus = isCorrect;
+                  toolResults = { success: isCorrect, message: isCorrect ? '验证通过！答案正确。' : `验证失败。预期结果为: ${activeExpectedAnswer}` };
+                  if (isCorrect) {
+                    validationMsg = '经过多轮工具调用，模型成功识别并完成了任务，且最终答案验证正确！';
+                  } else {
+                    validationMsg = `经过多轮工具调用，模型虽然尝试完成任务，但最终提交的答案验证错误（提交值: ${args.answer}）。`;
+                  }
+                } catch (e) { toolResults = { error: e.message }; }
+              }
+              toolResultsParts.push({
+                type: 'tool_result',
+                tool_use_id: toolUse.id,
+                content: JSON.stringify(toolResults)
+              });
+              addMessage('tool', `工具执行 #${turn}`, toolResults);
+            }
+            messages.push({ role: 'user', content: toolResultsParts });
+            turn++;
+          } else {
+            break;
+          }
+        }
+
+        if (validationStatus === true) addInlineSuccess(validationMsg);
+        else if (validationStatus === false) addInlineError(validationMsg);
+        else if (!hasSubmittedAnswer) addInlineInfo('模型未执行最终的答案提交工具，流程提前结束。');
+      }
+      else if (scenario === 'gemini_tools') {
+        const functionDeclarations = [
+          {
+            name: 'convert_base',
+            description: '将数字从一种进制转换为另一种进制',
+            parameters: {
+              type: 'object',
+              properties: {
+                number: { type: 'string', description: '待转换的数字' },
+                from_base: { type: 'integer', description: '原进制 (如 2, 10, 16)' },
+                to_base: { type: 'integer', description: '目标进制 (如 2, 10, 16)' }
+              },
+              required: ['number', 'from_base', 'to_base']
+            }
+          },
+          {
+            name: 'submit_answer',
+            description: '提交最终计算出的结果答案以供验证',
+            parameters: {
+              type: 'object',
+              properties: {
+                answer: { type: 'string', description: '最终转换出的字符串结果' }
+              },
+              required: ['answer']
+            }
+          }
+        ];
+
+        let contents = [{ role: 'user', parts: [{ text: userText }] }];
+        addMessage('user', '用户消息 #1', contents[0]);
+
+        let turn = 1;
+        let hasSubmittedAnswer = false;
+        let validationStatus = null;
+        let validationMsg = '';
+
+        const MAX_TURNS = 8;
+        while (turn <= MAX_TURNS) {
+          const gReq = {
+            systemInstruction: { parts: [{ text: '你是一个有帮助的助手。你不仅能够调用 convert_base 工具，还必须在得到最终计算结果后调用 submit_answer 工具来提交最终答案。' }] },
+            tools: [{ functionDeclarations }],
+            toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
+            contents
+          };
+          addBlock(`请求 #${turn}`, gReq);
+
+          const gTStart = Date.now();
+          const gR = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq), signal });
+          const gData = ensureJsonOrThrow(gR);
+          const gTDuration = Date.now() - gTStart;
+          addBlock(`响应 #${turn}`, gData, gTDuration);
+
+          const cand = gData.candidates && gData.candidates[0];
+          const gContent = cand && cand.content;
+          if (!gContent) break;
+
+          contents.push(gContent);
+          addMessage('assistant', `模型响应 #${turn}`, gContent);
+
+          const fcs = (gContent.parts || []).filter(p => p.functionCall);
+          if (fcs.length > 0) {
+            const responseParts = [];
+            for (const part of fcs) {
+              const fc = part.functionCall;
+              let toolResults = { error: 'Unknown function' };
+              if (fc.name === 'convert_base') {
+                try {
+                  const args = fc.args || {};
+                  const val = parseInt(args.number, args.from_base);
+                  toolResults = isNaN(val) ? { error: 'Invalid input' } : { result: val.toString(args.to_base) };
+                } catch (e) { toolResults = { error: e.message }; }
+              } else if (fc.name === 'submit_answer') {
+                hasSubmittedAnswer = true;
+                try {
+                  const args = fc.args || {};
+                  const isCorrect = String(args.answer).toUpperCase() === activeExpectedAnswer;
+                  validationStatus = isCorrect;
+                  toolResults = { success: isCorrect, message: isCorrect ? '验证通过！答案正确。' : `验证失败。预期结果为: ${activeExpectedAnswer}` };
+                  if (isCorrect) {
+                    validationMsg = '经过多轮工具调用，模型成功识别并完成了任务，且最终答案验证正确！';
+                  } else {
+                    validationMsg = `经过多轮工具调用，模型虽然尝试完成任务，但最终提交的答案验证错误（提交值: ${args.answer}）。`;
+                  }
+                } catch (e) { toolResults = { error: e.message }; }
+              }
+              responseParts.push({
+                functionResponse: { name: fc.name, response: toolResults }
+              });
+              addMessage('tool', `工具执行 #${turn}`, toolResults);
+            }
+            contents.push({ role: 'function', parts: responseParts });
+            turn++;
+          } else {
+            break;
+          }
+        }
+
+        if (validationStatus === true) addInlineSuccess(validationMsg);
+        else if (validationStatus === false) addInlineError(validationMsg);
+        else if (!hasSubmittedAnswer) addInlineInfo('模型未执行最终的答案提交工具，流程提前结束。');
+      }
+      else if (scenario === 'responses_tools') {
+        const responsesEndpoint = buildResponsesEndpoint(apiUrl);
+        const tools = [
+          {
+            type: 'function',
+            name: 'convert_base',
+            description: '将数字从一种进制转换为另一种进制',
+            strict: true,
+            parameters: {
+              type: 'object',
+              properties: {
+                number: { type: 'string', description: '待转换的数字' },
+                from_base: { type: 'integer', description: '原进制 (如 2, 10, 16)' },
+                to_base: { type: 'integer', description: '目标进制 (如 2, 10, 16)' }
+              },
+              required: ['number', 'from_base', 'to_base'],
+              additionalProperties: false
+            }
+          },
+          {
+            type: 'function',
+            name: 'submit_answer',
+            description: '提交最终计算出的结果答案以供验证',
+            strict: true,
+            parameters: {
+              type: 'object',
+              properties: {
+                answer: { type: 'string', description: '最终转换出的字符串结果' }
+              },
+              required: ['answer'],
+              additionalProperties: false
+            }
+          }
+        ];
+
+        let history = [{ role: 'user', content: userText }];
+        addMessage('user', '用户消息 #1', history[0]);
+
+        let turn = 1;
+        let hasSubmittedAnswer = false;
+        let validationStatus = null;
+        let validationMsg = '';
+
+        const MAX_TURNS = 8;
+        while (turn <= MAX_TURNS) {
+          const rtReq = { model, tools, input: history };
+          addBlock(`请求 #${turn}`, rtReq);
+
+          const rtTStart = Date.now();
+          const rtR = await fetchAndParse(responsesEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify(rtReq),
+            signal
+          });
+          const rtData = ensureJsonOrThrow(rtR);
+          const rtTDuration = Date.now() - rtTStart;
+          addBlock(`响应 #${turn}`, rtData, rtTDuration);
+
+          const outputs = Array.isArray(rtData.output) ? rtData.output : [];
+          history.push(...outputs);
+
+          if (rtData.output_text) {
+            addMessage('assistant', `模型响应 #${turn}`, { text: rtData.output_text });
+          } else {
+            const msgItem = outputs.find(item => item && item.type === 'message');
+            if (msgItem && msgItem.content) {
+              addMessage('assistant', `模型响应 #${turn}`, msgItem.content);
+            } else if (outputs.length > 0) {
+              addMessage('assistant', `模型响应 #${turn}`, outputs);
+            }
+          }
+
+          const fcs = outputs.filter(item => item && item.type === 'function_call');
+          if (fcs.length > 0) {
+            for (const fc of fcs) {
+              let toolResults = { error: 'Unknown function' };
+              if (fc.name === 'convert_base') {
+                try {
+                  const args = JSON.parse(fc.arguments || '{}');
+                  const val = parseInt(args.number, args.from_base);
+                  toolResults = isNaN(val) ? { error: 'Invalid input' } : { result: val.toString(args.to_base) };
+                } catch (e) { toolResults = { error: e.message }; }
+              } else if (fc.name === 'submit_answer') {
+                hasSubmittedAnswer = true;
+                try {
+                  const args = JSON.parse(fc.arguments || '{}');
+                  const isCorrect = String(args.answer).toUpperCase() === activeExpectedAnswer;
+                  validationStatus = isCorrect;
+                  toolResults = { success: isCorrect, message: isCorrect ? '验证通过！答案正确。' : `验证失败。预期结果为: ${activeExpectedAnswer}` };
+                  if (isCorrect) {
+                    validationMsg = '经过多轮工具调用，模型成功识别并完成了任务，且最终答案验证正确！';
+                  } else {
+                    validationMsg = `经过多轮工具调用，模型虽然尝试完成任务，但最终提交的答案验证错误（提交值: ${args.answer}）。`;
+                  }
+                } catch (e) { toolResults = { error: e.message }; }
+              }
+              const outputItem = {
+                type: 'function_call_output',
+                call_id: fc.call_id,
+                output: JSON.stringify(toolResults)
+              };
+              history.push(outputItem);
+              addMessage('tool', `工具执行 #${turn}`, toolResults);
+            }
+            turn++;
+          } else {
+            break;
+          }
+        }
+
+        if (validationStatus === true) addInlineSuccess(validationMsg);
+        else if (validationStatus === false) addInlineError(validationMsg);
+        else if (!hasSubmittedAnswer) addInlineInfo('模型未执行最终的答案提交工具，流程提前结束。');
+      }
+      else if (scenario === 'responses_search') {
+        // OpenAI Responses API with web_search tool 
         const responsesEndpoint = buildResponsesEndpoint(apiUrl);
         const rReq = {
           model,
           tools: [{ type: 'web_search' }],
-          input: userText || '今天有什么正面的新闻？'
+          input: [{ role: 'user', content: userText || '搜索当前最新的Gemini旗舰模型是？' }]
         };
         addBlock('请求 #1', rReq);
-        addMessage('user', '消息', { input: rReq.input });
+        addMessage('user', '用户消息', rReq.input[0]);
         const rTStart = Date.now();
         const rR = await fetchAndParse(responsesEndpoint, {
           method: 'POST',
@@ -1043,76 +1238,76 @@
         // 检测是否存在 web_search_call
         const output = rData.output;
         let hasWebSearchCall = false;
-        if(Array.isArray(output)){
+        if (Array.isArray(output)) {
           hasWebSearchCall = output.some(item => item && item.type === 'web_search_call');
         }
 
         // 显示回答内容
-        if(rData.output_text){
+        if (rData.output_text) {
           addMessage('assistant', '回答', { text: rData.output_text });
-        } else if(Array.isArray(output)){
+        } else if (Array.isArray(output)) {
           const msgItem = output.find(item => item && item.type === 'message');
-          if(msgItem && msgItem.content){
+          if (msgItem && msgItem.content) {
             addMessage('assistant', '回答', msgItem.content);
           }
         }
 
         // 未触发搜索工具调用的提示放在响应下面
-        if(!hasWebSearchCall){
+        if (!hasWebSearchCall) {
           addInlineInfo('未触发搜索工具调用：模型可能未理解指令，或 API 异常。');
         } else {
           addInlineSuccess('模型成功进行了搜索工具调用，但回答中仍可能含有事实性错误');
         }
       }
-      else if(scenario === 'gemini_search'){
+      else if (scenario === 'gemini_search') {
         const gReq = {
           tools: [{ googleSearch: {} }],
           contents: [{ role: 'user', parts: [{ text: userText || '搜索当前最新的Gemini旗舰模型是？' }] }]
         };
         addBlock('请求 #1', gReq);
-        addMessage('user', '消息', gReq.contents[0]);
+        addMessage('user', '用户消息', gReq.contents[0]);
         const gsTStart = Date.now();
         const gR = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq), signal });
         const gData = ensureJsonOrThrow(gR);
         const gsTDuration = Date.now() - gsTStart;
         addBlock('响应 #1', gData, gsTDuration);
         const cand = gData.candidates && gData.candidates[0];
-        if(cand && cand.content){ addMessage('assistant', '回答', cand.content); }
+        if (cand && cand.content) { addMessage('assistant', '回答', cand.content); }
 
         // 检测是否存在 groundingMetadata
         const hasGroundingMetadata = cand && cand.groundingMetadata;
-        if(!hasGroundingMetadata){
+        if (!hasGroundingMetadata) {
           addInlineInfo('未触发搜索工具调用：模型可能未理解指令，或 API 异常。');
         } else {
           addInlineSuccess('模型成功进行了搜索工具调用，但回答中仍可能含有事实性错误');
         }
       }
-      else if(scenario === 'gemini_url_context'){
+      else if (scenario === 'gemini_url_context') {
         const gReq = {
           tools: [{ urlContext: {} }],
           contents: [{ role: 'user', parts: [{ text: userText || '这个工具有哪些特点？https://ai.google.dev/gemini-api/docs/url-context' }] }]
         };
         addBlock('请求 #1', gReq);
-        addMessage('user', '消息', gReq.contents[0]);
+        addMessage('user', '用户消息', gReq.contents[0]);
         const guTStart = Date.now();
         const gR = await fetchAndParse(geminiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gReq), signal });
         const gData = ensureJsonOrThrow(gR);
         const guTDuration = Date.now() - guTStart;
         addBlock('响应 #1', gData, guTDuration);
         const cand = gData.candidates && gData.candidates[0];
-        if(cand && cand.content){ addMessage('assistant', '回答', cand.content); }
+        if (cand && cand.content) { addMessage('assistant', '回答', cand.content); }
 
         // 检测是否存在 groundingMetadata
         const hasGroundingMetadata = cand && cand.groundingMetadata;
-        if(!hasGroundingMetadata){
+        if (!hasGroundingMetadata) {
           addInlineInfo('未触发 URL 上下文工具调用：模型可能未理解指令，或 API 异常。');
         } else {
           addInlineSuccess('模型成功进行了搜索工具调用，但回答中仍可能含有事实性错误');
         }
       }
 
-    }catch(err){
-      if(err.name === 'AbortError'){
+    } catch (err) {
+      if (err.name === 'AbortError') {
         console.log('Request aborted by user');
         return;
       }
@@ -1120,7 +1315,7 @@
       // 清空顶部简要错误，改为在时间线内展示红色错误块
       errorMessage.textContent = '';
       addInlineError(`错误：${err && (err.message || err)}`, { rawText: err && err.rawText, contentType: err && err.contentType });
-    }finally{
+    } finally {
       requestPending = false;
       hideWaiting();
       testBtn.disabled = false; testBtn.textContent = '发送测试请求';
@@ -1128,16 +1323,16 @@
   });
 
   // ---- network helpers ----
-  async function fetchAndParse(url, options){
+  async function fetchAndParse(url, options) {
     const res = await fetch(url, options);
     const contentType = res.headers.get('content-type') || '';
     const text = await res.text();
-    let json; try { json = JSON.parse(text); } catch{}
-    if(!res.ok){ const e = new Error(`HTTP ${res.status}`); e.status = res.status; e.rawText = text; e.contentType = contentType; throw e; }
+    let json; try { json = JSON.parse(text); } catch { }
+    if (!res.ok) { const e = new Error(`HTTP ${res.status}`); e.status = res.status; e.rawText = text; e.contentType = contentType; throw e; }
     return { json, text, contentType };
   }
-  function ensureJsonOrThrow(parsed){
-    if(parsed && parsed.json) return parsed.json;
+  function ensureJsonOrThrow(parsed) {
+    if (parsed && parsed.json) return parsed.json;
     const e = new Error('响应非 JSON');
     e.rawText = parsed && parsed.text;
     e.contentType = parsed && parsed.contentType;
